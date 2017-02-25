@@ -3,7 +3,8 @@
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Translation\LoaderInterface;
 
-class DatabaseLoader implements LoaderInterface {
+class DatabaseLoader implements LoaderInterface
+{
 
     protected $_app = null;
 
@@ -22,7 +23,7 @@ class DatabaseLoader implements LoaderInterface {
      */
     public function load($locale, $group, $namespace = null)
     {
-        $query = \DB::table('translations')
+        $query = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
             ->where('locale', $locale)
             ->where('group', $group);
 
@@ -39,7 +40,8 @@ class DatabaseLoader implements LoaderInterface {
      * @param  string  $hint
      * @return void
      */
-    public function addNamespace($namespace, $hint) {}
+    public function addNamespace($namespace, $hint)
+    {}
 
     /**
      * Adds a new translation to the database or
@@ -53,7 +55,9 @@ class DatabaseLoader implements LoaderInterface {
      */
     public function addTranslation($locale, $group, $key)
     {
-        if(!\Config::get('app.debug') || \Config::get('translation-db.minimal')) return;
+        if (!\Config::get('app.debug') || \Config::get('translation-db.minimal')) {
+            return;
+        }
 
         // Extract the real key from the translation.
         if (preg_match("/^{$group}\.(.*?)$/sm", $key, $match)) {
@@ -62,25 +66,25 @@ class DatabaseLoader implements LoaderInterface {
             throw new TranslationException('Could not extract key from translation.');
         }
 
-        $item = \DB::table('translations')
+        $item = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
             ->where('locale', $locale)
             ->where('group', $group)
             ->where('name', $name)->first();
 
         $data = compact('locale', 'group', 'name');
         $data = array_merge($data, [
-            'viewed_at' => date_create(),
+            'viewed_at'  => date_create(),
             'updated_at' => date_create(),
         ]);
 
-        if($item === null) {
+        if ($item === null) {
             $data = array_merge($data, [
                 'created_at' => date_create(),
             ]);
-            \DB::table('translations')->insert($data);
+            \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->insert($data);
         } else {
-            if($this->_app['config']->get('translation-db.update_viewed_at')) {
-                \DB::table('translations')->where('id', $item->id)->update($data);
+            if ($this->_app['config']->get('translation-db.update_viewed_at')) {
+                \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->where('id', $item->id)->update($data);
             }
         }
     }

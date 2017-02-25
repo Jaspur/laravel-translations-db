@@ -1,13 +1,11 @@
 <?php namespace Hpolthof\Translation\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
 
-class FetchCommand extends Command {
+class FetchCommand extends Command
+{
 
     /**
      * The console command name.
@@ -24,14 +22,13 @@ class FetchCommand extends Command {
     protected $description = 'Fetches translations from language files and imports it into the database.';
 
     protected $lang_path = null;
-    protected $locales = null;
+    protected $locales   = null;
 
     public function __construct()
     {
-        $this->lang_path = base_path().'/resources/lang';
+        $this->lang_path = base_path() . '/resources/lang';
         parent::__construct();
     }
-
 
     /**
      * Execute the console command.
@@ -40,39 +37,44 @@ class FetchCommand extends Command {
      */
     public function fire()
     {
-        if(!$this->validate()) return false;
+        if (!$this->validate()) {
+            return false;
+        }
 
         $locales = $this->usableLocales();
-        foreach($locales as $locale) {
+        foreach ($locales as $locale) {
             $groups = $this->usableGroups($locale);
-            foreach($groups as $group) {
+            foreach ($groups as $group) {
                 $this->storeGroup($locale, $group);
             }
         }
     }
 
-    protected function flattenArray($keys, $prefix = '') {
+    protected function flattenArray($keys, $prefix = '')
+    {
         $result = [];
-        foreach($keys as $key => $value) {
-            if(is_array($value)) {
-                $result = array_merge($result, $this->flattenArray($value, $prefix.$key.'.'));
+        foreach ($keys as $key => $value) {
+            if (is_array($value)) {
+                $result = array_merge($result, $this->flattenArray($value, $prefix . $key . '.'));
             } else {
-                $result[$prefix.$key] = $value;
+                $result[$prefix . $key] = $value;
             }
         }
         return $result;
     }
 
-    protected function cleanLocaleDir($item) {
-        return str_replace($this->lang_path.'/', '', $item);
+    protected function cleanLocaleDir($item)
+    {
+        return str_replace($this->lang_path . '/', '', $item);
     }
 
-    protected function cleanGroupDir($item, $locale) {
-        $clean = str_replace($this->lang_path."/{$locale}/", '', $item);
+    protected function cleanGroupDir($item, $locale)
+    {
+        $clean = str_replace($this->lang_path . "/{$locale}/", '', $item);
         if (preg_match('/^(.*?)\.php$/sm', $clean, $match)) {
             return $match[1];
         }
-        return FALSE;
+        return false;
     }
 
     /**
@@ -104,7 +106,7 @@ class FetchCommand extends Command {
     protected function getLocales()
     {
         if ($this->locales === null) {
-            $locales = \File::directories($this->lang_path);
+            $locales       = \File::directories($this->lang_path);
             $this->locales = array_map([$this, 'cleanLocaleDir'], $locales);
         }
         $locales = $this->locales;
@@ -118,7 +120,7 @@ class FetchCommand extends Command {
     protected function hasLocale($locale)
     {
         $result = false;
-        if (array_search($locale, $this->getLocales()) !== FALSE) {
+        if (array_search($locale, $this->getLocales()) !== false) {
             $result = true;
         }
         return $result;
@@ -127,8 +129,8 @@ class FetchCommand extends Command {
     protected function hasGroup($locale, $group)
     {
         $result = false;
-        $file = $this->lang_path."/{$locale}/{$group}.php";
-        if(\File::exists($file)) {
+        $file   = $this->lang_path . "/{$locale}/{$group}.php";
+        if (\File::exists($file)) {
             $result = true;
         }
         return $result;
@@ -139,9 +141,9 @@ class FetchCommand extends Command {
      */
     protected function getGroups($locale)
     {
-        $path = $this->lang_path."/{$locale}";
+        $path   = $this->lang_path . "/{$locale}";
         $groups = \File::files($path);
-        foreach($groups as &$group) {
+        foreach ($groups as &$group) {
             $group = $this->cleanGroupDir($group, $locale);
         }
         return $groups;
@@ -177,7 +179,10 @@ class FetchCommand extends Command {
                 foreach ($this->getLocales() as $locale) {
                     $this->validateGroup($locale, $group);
                 }
-            } else $this->validateGroup($locale, $group);
+            } else {
+                $this->validateGroup($locale, $group);
+            }
+
         }
         return true;
     }
@@ -223,7 +228,7 @@ class FetchCommand extends Command {
      */
     protected function storeTranslation($locale, $group, $name, $value, $inserted, $updated)
     {
-        $item = \DB::table('translations')
+        $item = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
             ->where('locale', $locale)
             ->where('group', $group)
             ->where('name', $name)->first();
@@ -236,11 +241,11 @@ class FetchCommand extends Command {
             $data = array_merge($data, [
                 'created_at' => date_create(),
             ]);
-            \DB::table('translations')->insert($data);
+            \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->insert($data);
             $inserted++;
             return array($inserted, $updated);
         } else {
-            \DB::table('translations')->where('id', $item->id)->update($data);
+            \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->where('id', $item->id)->update($data);
             $updated++;
             return array($inserted, $updated);
         }
@@ -255,7 +260,7 @@ class FetchCommand extends Command {
         $keys = require $this->lang_path . "/{$locale}/{$group}.php";
         $keys = $this->flattenArray($keys);
 
-        $updated = 0;
+        $updated  = 0;
         $inserted = 0;
         foreach ($keys as $name => $value) {
             list($inserted, $updated) = $this->storeTranslation($locale, $group, $name, $value, $inserted, $updated);
@@ -272,6 +277,6 @@ class FetchCommand extends Command {
      */
     protected function flushCache($locale, $group)
     {
-        \Cache::forget('__translations.'.$locale.'.'.$group);
+        \Cache::forget('__translations.' . $locale . '.' . $group);
     }
 }
