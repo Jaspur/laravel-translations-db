@@ -25,7 +25,7 @@ class TranslationsController extends Controller
 
     public function getGroups()
     {
-        $query = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $query = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->select('group')
             ->distinct()
             ->orderBy('group');
@@ -35,7 +35,7 @@ class TranslationsController extends Controller
 
     public function getLocales()
     {
-        $query = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $query = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->select('locale')
             ->distinct()
             ->orderBy('locale');
@@ -49,13 +49,13 @@ class TranslationsController extends Controller
             throw new TranslationException();
         }
 
-        $base = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $base = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->select('name', 'value')
             ->where('locale', $request->get('locale'))
             ->where('group', $request->get('group'))
             ->orderBy('name')
             ->get();
-        $new = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $new = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->select('name', 'value')
             ->where('locale', strtolower($request->get('translate')))
             ->where('group', $request->get('group'))
@@ -76,7 +76,7 @@ class TranslationsController extends Controller
 
     public function postStore(Request $request)
     {
-        $item = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $item = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->where('locale', strtolower($request->get('locale')))
             ->where('group', $request->get('group'))
             ->where('name', $request->get('name'))->first();
@@ -93,9 +93,9 @@ class TranslationsController extends Controller
             $data = array_merge($data, [
                 'created_at' => date_create(),
             ]);
-            $result = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->insert($data);
+            $result = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')->insert($data);
         } else {
-            $result = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->where('id', $item->id)->update($data);
+            $result = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')->where('id', $item->id)->update($data);
         }
 
         if (!$result) {
@@ -113,7 +113,7 @@ class TranslationsController extends Controller
 
     public function postDelete(Request $request)
     {
-        \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->where('name', strtolower($request->get('name')))->delete();
         return 'OK';
     }

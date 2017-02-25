@@ -228,7 +228,7 @@ class FetchCommand extends Command
      */
     protected function storeTranslation($locale, $group, $name, $value, $inserted, $updated)
     {
-        $item = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
+        $item = \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')
             ->where('locale', $locale)
             ->where('group', $group)
             ->where('name', $name)->first();
@@ -241,11 +241,11 @@ class FetchCommand extends Command
             $data = array_merge($data, [
                 'created_at' => date_create(),
             ]);
-            \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->insert($data);
+            \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')->insert($data);
             $inserted++;
             return array($inserted, $updated);
         } else {
-            \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->where('id', $item->id)->update($data);
+            \DB::connection(env('DB_CONNECTION_TRANSLATIONS'))->table('translations')->where('id', $item->id)->update($data);
             $updated++;
             return array($inserted, $updated);
         }
