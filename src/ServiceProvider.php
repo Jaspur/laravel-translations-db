@@ -65,12 +65,11 @@ class ServiceProvider extends \Illuminate\Translation\TranslationServiceProvider
 
         // Only in debug mode the translations interface should be available.
         if ($this->app['config']->get('app.debug') && $this->app['config']->get('translation-db.webinterface')) {
-            if (auth()->check()) {
-                return abort(403);
-            }
+
             $routeConfig = [
-                'namespace' => 'Hpolthof\Translation\Controllers',
-                'prefix'    => $this->app['config']->get('translation-db.route_prefix'),
+                'namespace'  => 'Hpolthof\Translation\Controllers',
+                'prefix'     => $this->app['config']->get('translation-db.route_prefix'),
+                'middleware' => 'auth',
             ];
             $this->app['router']->group($routeConfig, function ($router) {
                 $router->get('/', [
