@@ -25,7 +25,7 @@ class TranslationsController extends Controller
 
     public function getGroups()
     {
-        $query = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        $query = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->select('group')
             ->distinct()
             ->orderBy('group');
@@ -35,7 +35,7 @@ class TranslationsController extends Controller
 
     public function getLocales()
     {
-        $query = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        $query = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->select('locale')
             ->distinct()
             ->orderBy('locale');
@@ -49,13 +49,13 @@ class TranslationsController extends Controller
             throw new TranslationException();
         }
 
-        $base = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        $base = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->select('name', 'value')
             ->where('locale', $request->get('locale'))
             ->where('group', $request->get('group'))
             ->orderBy('name')
             ->get();
-        $new = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        $new = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->select('name', 'value')
             ->where('locale', strtolower($request->get('translate')))
             ->where('group', $request->get('group'))
@@ -76,7 +76,7 @@ class TranslationsController extends Controller
 
     public function postStore(Request $request)
     {
-        $item = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        $item = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->where('locale', strtolower($request->get('locale')))
             ->where('group', $request->get('group'))
             ->where('name', $request->get('name'))->first();
@@ -93,9 +93,9 @@ class TranslationsController extends Controller
             $data = array_merge($data, [
                 'created_at' => date_create(),
             ]);
-            $result = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->insert($data);
+            $result = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->insert($data);
         } else {
-            $result = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->where('id', $item->id)->update($data);
+            $result = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->where('id', $item->id)->update($data);
         }
 
         if (!$result) {
@@ -113,7 +113,7 @@ class TranslationsController extends Controller
 
     public function postDelete(Request $request)
     {
-        \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')
+        \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')
             ->where('name', strtolower($request->get('name')))->delete();
         return 'OK';
     }

@@ -29,7 +29,7 @@ class DumpCommand extends Command
      */
     public function fire()
     {
-        $query = \DB::table('translations')->on('DB_CONNECTION_TRANSLATIONS')->select('locale', 'group', 'name', 'value');
+        $query = \DB::connection('DB_CONNECTION_TRANSLATIONS')->table('translations')->select('locale', 'group', 'name', 'value');
         $this->addOptionToQuery($query, 'locale');
         $this->addOptionToQuery($query, 'group');
         $results = $query->get();
