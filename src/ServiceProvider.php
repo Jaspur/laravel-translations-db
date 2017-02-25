@@ -69,7 +69,7 @@ class ServiceProvider extends \Illuminate\Translation\TranslationServiceProvider
             $routeConfig = [
                 'namespace'  => 'Hpolthof\Translation\Controllers',
                 'prefix'     => $this->app['config']->get('translation-db.route_prefix'),
-                'middleware' => 'auth',
+                'middleware' => 'auth.admin',
             ];
             $this->app['router']->group($routeConfig, function ($router) {
                 $router->get('/', [
