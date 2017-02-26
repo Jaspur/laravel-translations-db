@@ -67,39 +67,40 @@ class ServiceProvider extends \Illuminate\Translation\TranslationServiceProvider
         if ($this->app['config']->get('app.debug') && $this->app['config']->get('translation-db.webinterface')) {
 
             $routeConfig = [
-                'namespace'  => 'Hpolthof\Translation\Controllers',
-                'prefix'     => $this->app['config']->get('translation-db.route_prefix'),
-                'middleware' => 'auth.admin',
+                'namespace' => 'Hpolthof\Translation\Controllers',
+                'prefix'    => $this->app['config']->get('translation-db.route_prefix'),
             ];
             $this->app['router']->group($routeConfig, function ($router) {
-                $router->get('/', [
-                    'uses' => 'TranslationsController@getIndex',
-                    'as'   => 'translations.index',
-                ]);
-                $router->get('/groups', [
-                    'uses' => 'TranslationsController@getGroups',
-                    'as'   => 'translations.groups',
-                ]);
-                $router->get('/locales', [
-                    'uses' => 'TranslationsController@getLocales',
-                    'as'   => 'translations.locales',
-                ]);
-                $router->post('/items', [
-                    'uses' => 'TranslationsController@postItems',
-                    'as'   => 'translations.items',
-                ]);
-                $router->post('/store', [
-                    'uses' => 'TranslationsController@postStore',
-                    'as'   => 'translations.store',
-                ]);
-                $router->post('/translate', [
-                    'uses' => 'TranslationsController@postTranslate',
-                    'as'   => 'translations.translate',
-                ]);
-                $router->post('/delete', [
-                    'uses' => 'TranslationsController@postDelete',
-                    'as'   => 'translations.delete',
-                ]);
+                if (env('APP_ENV') != 'production') {
+                    $router->get('/', [
+                        'uses' => 'TranslationsController@getIndex',
+                        'as'   => 'translations.index',
+                    ]);
+                    $router->get('/groups', [
+                        'uses' => 'TranslationsController@getGroups',
+                        'as'   => 'translations.groups',
+                    ]);
+                    $router->get('/locales', [
+                        'uses' => 'TranslationsController@getLocales',
+                        'as'   => 'translations.locales',
+                    ]);
+                    $router->post('/items', [
+                        'uses' => 'TranslationsController@postItems',
+                        'as'   => 'translations.items',
+                    ]);
+                    $router->post('/store', [
+                        'uses' => 'TranslationsController@postStore',
+                        'as'   => 'translations.store',
+                    ]);
+                    $router->post('/translate', [
+                        'uses' => 'TranslationsController@postTranslate',
+                        'as'   => 'translations.translate',
+                    ]);
+                    $router->post('/delete', [
+                        'uses' => 'TranslationsController@postDelete',
+                        'as'   => 'translations.delete',
+                    ]);
+                }
             });
         }
 
